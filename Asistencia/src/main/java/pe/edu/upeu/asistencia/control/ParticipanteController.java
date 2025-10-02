@@ -54,19 +54,20 @@ public class ParticipanteController {
     public void agregarAccionBotones(){
         Callback<TableColumn<Participante, Void>, TableCell<Participante, Void>> cellFactory =
                 param-> new  TableCell<>() {
-                    Button btnEditar = new Button("Editar");
-                    Button btnEliminar = new Button("Eliminar");
+                Button btnEditar = new Button("Editar");
+                Button btnEliminar = new Button("Eliminar");
                     {
                         btnEditar.setOnAction((event) -> {
                             Participante participante =  getTableView().getItems().get(getIndex());
                             editarParticipante(participante, getIndex());
                         });
                         btnEliminar.setOnAction((event) -> {
-                            eliminarParticipante(getIndex());
+                            Participante participante =  getTableView().getItems().get(getIndex());
+                            eliminarParticipante(participante.getDni());
                         });
                     }
-                    @Override
-                    protected void updateItem(Void item, boolean empty){
+                @Override
+                protected void updateItem(Void item, boolean empty){
                         super.updateItem(item, empty);
                         if(empty){
                             setGraphic(null);
@@ -75,25 +76,28 @@ public class ParticipanteController {
                             hBox.setSpacing(10);
                             setGraphic(hBox);
                         }
-                    }
+                }
                 };
         opcionCol.setCellFactory(cellFactory);
     }
     public void editarParticipante(Participante p, int index){
-        txtDni.setText(p.getDni().getValue());
-        txtNombres.setText(p.getNombre().getValue());
-        txtApellidos.setText(p.getApellidos().getValue());
+        txtDni.setText(p.getDni());
+        txtNombres.setText(p.getNombre());
+        txtApellidos.setText(p.getApellidos());
         cbxCarrera.getSelectionModel().select(p.getCarrera());
         cbxTipoParticipante.getSelectionModel().select(p.getTipoParticipante());
         indexE=index;
     }
     public void listarParticipantes(){
         dniCol.setCellValueFactory(cellData ->
-                cellData.getValue().getDni());
+                new SimpleStringProperty(cellData.getValue().getDni())
+        );
         nombreCol.setCellValueFactory(cellData ->
-                cellData.getValue().getNombre());
+                new  SimpleStringProperty(cellData.getValue().getNombre())
+        );
         apellidoCol.setCellValueFactory(cellData ->
-                cellData.getValue().getApellidos());
+                new SimpleStringProperty(cellData.getValue().getApellidos())
+        );
         carreraCol.setCellValueFactory(cellData ->
                 new SimpleStringProperty(cellData.getValue().getCarrera().toString()));
         tipoPartCol.setCellValueFactory(cellData ->
@@ -106,15 +110,16 @@ public class ParticipanteController {
     @FXML
     public void crearParticipante(){
         Participante participante = new Participante();
-        participante.setDni(new SimpleStringProperty(txtDni.getText()));
-        participante.setNombre(new SimpleStringProperty(txtNombres.getText()));
-        participante.setApellidos(new SimpleStringProperty(txtApellidos.getText()));
+        participante.setDni(txtDni.getText());
+        participante.setNombre(txtNombres.getText());
+        participante.setApellidos(txtApellidos.getText());
         participante.setCarrera(cbxCarrera.getValue());
         participante.setTipoParticipante(cbxTipoParticipante.getValue());
+        participante.setEstado(true);
         if(indexE==-1){
             ps.save(participante);
         }else{
-            ps.update(participante, indexE);
+            ps.update(participante);
             indexE=-1;
         }
         limpiarFormulario();
@@ -131,8 +136,8 @@ public class ParticipanteController {
 
 
 
-    public void eliminarParticipante(int index){
-        ps.delete(index);
+    public void eliminarParticipante(String dni){
+        ps.delete(dni);
         listarParticipantes();
     }
 }
